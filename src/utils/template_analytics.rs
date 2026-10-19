@@ -917,6 +917,8 @@ mod tests {
             updated_at: String::new(),
             cli_version_min: None,
             cli_version_max: None,
+            soroban_sdk_min: None,
+            soroban_sdk_max: None,
             documented: false,
             maintenance: MaintenanceStatus::Unknown,
             license: None,
@@ -926,8 +928,10 @@ mod tests {
             documentation: None,
             categories: vec![],
             featured: false,
+            provenance: None,
             security_review: None,
             changelog: None,
+            ..Default::default()
         }
     }
 

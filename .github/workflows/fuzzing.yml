@@ -37,6 +37,9 @@ on:
         required: false
         default: '1000'
 
+permissions:
+  contents: read
+
 # Cancel in-progress runs when a new commit is pushed to the same branch.
 concurrency:
   group: fuzzing-${{ github.ref }}
@@ -177,6 +180,30 @@ jobs:
 
       - name: Run each fuzz target
         run: |
+          set -euo pipefail
+          DURATION="${{ github.event.inputs.fuzz_duration || '10' }}"
+          # Enumerate all [[bin]] targets from the fuzz Cargo.toml.
+          targets=$(cargo fuzz list --fuzz-dir fuzz)
+          if [ -z "$targets" ]; then
+            echo "::error::No fuzz targets found"
+            exit 1
+          fi
+          any_fail=0
+          while IFS= read -r target; do
+            [ -z "$target" ] && continue
+            echo "--- fuzzing: $target for ${DURATION}s ---"
+            if ! cargo fuzz run --fuzz-dir fuzz "$target" -- \
+                -max_total_time="$DURATION" \
+                -jobs=1 \
+                -workers=1 \
+                -artifact_prefix="fuzz/corpus/${target}/"; then
+              echo "::error::Fuzz target $target produced a finding or crashed"
+              any_fail=1
+            fi
+          done <<< "$targets"
+          if [ "$any_fail" -ne 0 ]; then
+            exit 1
+          fi
           echo "All fuzz targets completed without findings."
 
       - name: Upload corpus artifacts on failure
@@ -187,67 +214,9 @@ jobs:
           path: fuzz/corpus/
 
   # ── 4. Coverage reporting ─────────────────────────────────────────────────────
-  coverage:
-    name: Coverage Report (cargo-llvm-cov)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust stable + llvm-tools
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: llvm-tools-preview
-
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libudev-dev
-
-      - name: Install cargo-llvm-cov
-        run: cargo install cargo-llvm-cov --locked
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-cov-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-cov-
-
-      - name: Generate LCOV coverage report
-        env:
-          PROPTEST_CASES: "1000"
-        run: |
-          cargo llvm-cov \
-            --locked --lcov --output-path target/lcov.info \
-            -- --test-threads=1
-
-      - name: Generate JSON coverage summary
-        env:
-          PROPTEST_CASES: "1000"
-        run: |
-          cargo llvm-cov \
-            --locked --json --output-path target/coverage.json \
-            -- --test-threads=1
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: target/lcov.info
-          flags: unittests,property-tests
-          name: starforge-coverage
-          fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report-${{ github.run_id }}
-          path: |
-            target/lcov.info
-            target/coverage.json
+  # Moved to .github/workflows/coverage.yml, which runs on every Rust change
+  # (not only fuzz/proptest paths) and renders LCOV, JSON and HTML reports from
+  # a single instrumented test run.
 
   # ── 5. Mutation testing (scheduled / manual only) ─────────────────────────────
   mutation-testing:

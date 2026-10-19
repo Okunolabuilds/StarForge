@@ -271,21 +271,50 @@ starforge deploy --wasm "$WASM" --wallet deployer --network mainnet --execute
 ## Contract commands
 
 ```bash norun
+# Build a contract with provenance metadata
+starforge contract build
+
+# Build without StarForge/source provenance metadata
+starforge contract build --no-provenance
+
 # Inspect a deployed contract instance
 starforge contract inspect <CONTRACT_ID>
-starforge contract inspect <CONTRACT_ID> --network mainnet
+
+# Inspect a local WASM's build metadata
+starforge contract inspect --wasm ./my_contract.wasm
+
+# Inspect deployed contract metadata as JSON
+starforge contract inspect <CONTRACT_ID> --json
+
+# Inspect local WASM metadata as JSON
+starforge contract inspect --wasm ./my_contract.wasm --json
 
 # Generate typed clients from a contract's embedded metadata
 starforge contract generate-bindings ./my_contract.wasm --lang rust
 starforge contract generate-bindings ./my_contract.wasm --lang ts
 ```
 
-> **Invoking contracts:** `starforge contract invoke` doesn't yet decode real
-> return values from simulation, and `--submit` doesn't sign with local wallets
-> yet. Use `stellar contract invoke` for now; see
-> [what stellar-cli does that StarForge doesn't](MIGRATING_FROM_STELLAR_CLI.md#what-stellar-cli-does-that-starforge-doesnt).
-> Scripted, repeatable call plans are available through
+> **Build provenance:** `contract build` embeds the Git repository URL, commit SHA,
+> and StarForge version in the WASM metadata. Because a repository URL may identify
+> a private project, use `--no-provenance` when that information should not be
+> embedded in the contract.
+
+> **Invoking contracts:** see [guides/INVOKE.md](guides/INVOKE.md) for
+> `--submit`, `--auto-restore`, and JSON output when archived entries must be
+> restored before an invoke. Scripted, repeatable call plans are available through
 > [`contract invoke-script`](#repeatable-invocation-scripts).
+
+### Contract TTL
+
+```bash norun
+starforge contract ttl show C… --network testnet
+starforge contract ttl show C… --warn-below 10000 --json
+starforge contract ttl extend C… --ledgers 100000 --wallet deployer --submit
+```
+
+`ttl show` lists instance/code/persistent live-until ledgers and a rough ETA.
+`--warn-below` exits non-zero for monitor/cron jobs. `ttl extend` always prints
+a cost estimate before submitting `ExtendFootprintTTL`.
 
 ## Local AI assistant
 

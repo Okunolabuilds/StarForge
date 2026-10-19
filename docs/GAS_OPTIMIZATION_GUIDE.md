@@ -10,7 +10,7 @@ improvements.
 
 ```bash norun
 # Profile a compiled contract
-starforge gas profile ./target/wasm32-unknown-unknown/release/my_contract.wasm
+starforge gas profile ./target/wasm32v1-none/release/my_contract.wasm
 
 # Compare two builds
 starforge gas compare baseline.wasm optimized.wasm
@@ -44,6 +44,31 @@ Reducing **instruction count** lowers every invocation cost.
 ## 1. Binary Size Reduction
 
 The Soroban upload limit is **128 KB**. Every byte costs gas on upload.
+
+### Measuring where the bytes go: `starforge optimize size`
+
+Before optimizing, find out which sections of the module are actually large.
+The `size` command breaks the binary down by WASM section category (code /
+data / custom) and checks the result against configurable budgets
+(see `starforge-size-budget.example.toml`):
+
+```bash norun
+# Soroban 128 KiB total check only
+starforge optimize size --wasm contract.wasm
+
+# Against a project budget file; fails (exit 1) when a budget is exceeded
+starforge optimize size --wasm contract.wasm --budget starforge-size-budget.toml \
+  --fail-on-overage
+
+# Machine-readable breakdown for CI
+starforge optimize size --wasm contract.wasm --budget starforge-size-budget.toml --json
+```
+
+A large **custom** section usually means debug/toolchain metadata (`--strip-debug`,
+`strip = true`); large **data** points at embedded strings; large **code** is
+function bodies best attacked with the Cargo profile below plus `optimize
+transform`. Budget failures print the next suggested commands for the category
+that actually failed.
 
 ### Cargo release profile
 
@@ -129,7 +154,7 @@ debug = []
 
 Build for production without the `debug` feature:
 ```bash norun
-cargo build --release --target wasm32-unknown-unknown
+cargo build --release --target wasm32v1-none
 ```
 
 ---
@@ -222,23 +247,10 @@ impl MyContract {
 
 ### Continuous profiling in CI
 
-```yaml
-# .github/workflows/ci.yml
-- name: Build contract
-  run: cargo build --release --target wasm32-unknown-unknown
-
-- name: Gas profile
-  run: |
-    starforge gas profile \
-      target/wasm32-unknown-unknown/release/my_contract.wasm \
-      --fail-on-critical
-
-- name: Gas comparison (on PRs)
-  if: github.event_name == 'pull_request'
-  run: |
-    starforge gas compare \
-      artifacts/baseline.wasm \
-      target/wasm32-unknown-unknown/release/my_contract.wasm
+```bash
+cargo build --release --target wasm32v1-none
+starforge gas profile target/wasm32v1-none/release/my_contract.wasm --fail-on-critical
+starforge gas compare artifacts/baseline.wasm target/wasm32v1-none/release/my_contract.wasm
 ```
 
 ### Reading the optimization score

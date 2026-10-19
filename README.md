@@ -4,6 +4,7 @@
 templates, encrypted wallets and deployment safety checks for Stellar.**
 
 [![CI](https://github.com/Nanle-code/StarForge/actions/workflows/ci.yml/badge.svg)](https://github.com/Nanle-code/StarForge/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Nanle-code/StarForge/branch/master/graph/badge.svg)](https://codecov.io/gh/Nanle-code/StarForge)
 ![License: MIT](https://img.shields.io/badge/License-MIT-cyan.svg)
 ![Status: beta](https://img.shields.io/badge/status-beta-yellow.svg)
 ![Stellar Wave](https://img.shields.io/badge/Stellar-Wave%20Program-blueviolet.svg)
@@ -12,24 +13,24 @@ templates, encrypted wallets and deployment safety checks for Stellar.**
 
 ## Overview
 
-**starforge** is a free, open-source command-line toolkit for developers building on the Stellar network. It brings together the most common Stellar and Soroban developer workflows â€” wallet management, project scaffolding, and contract deployment â€” into a single fast, ergonomic CLI.
+**starforge** is a free, open-source command-line toolkit for developers building on the Stellar network. It brings together the most common Stellar and Soroban developer workflows — wallet management, project scaffolding, and contract deployment — into a single fast, ergonomic CLI.
 
-Think of it as the "Hardhat or Foundry" experience for the Stellar ecosystem, built in Rust for speed and reliability.
+It provides a Hardhat/Foundry-like experience for the Stellar ecosystem while prioritizing reproducibility and security.
 
-This project is actively maintained and participates in the [Stellar Wave Program](https://www.drips.network/wave/stellar) on Drips â€” a monthly open-source contribution sprint where contributors earn rewards for merged pull requests.
+This project is actively maintained and participates in the [Stellar Wave Program](https://www.drips.network/wave/stellar) on Drips — a monthly open-source contribution sprint where contributors earn rewards for merged pull requests.
 
 Security architecture and trust-boundary assumptions are documented in the
-[StarForge threat model](./SECURITY_THREAT_MODEL.md). Report newly discovered
+[StarForge threat model](./docs/SECURITY_THREAT_MODEL.md). Report newly discovered
 security gaps as issues tagged `security` and include the affected boundary.
 
 ---
 
 ## Features
 
-### ?? Wallet Management
+### 🔐 Wallet Management
 Create and manage Stellar ed25519 keypairs locally. Generate cryptographically secure keys using proper Stellar strkey encoding (G... for public, S... for secret). Optionally encrypt keys at rest with AES-256-GCM. Fund testnet accounts via Friendbot, list all saved wallets, inspect live on-chain balances, and securely store keys in `~/.starforge/config.toml`.
 
-### ? Project Scaffolding
+### 🧩 Project Scaffolding
 Scaffold new Soroban smart contract projects from battle-tested templates with one command. Choose from: `hello-world`, `token`, `nft`, and `voting`. Use interactive mode (`--interactive`) to customize contract options like author, license, storage type, and test inclusion. Also scaffolds full Stellar dApp frontends (Vite + React).
 
 **NEW: Template Marketplace** - Discover and use community-contributed templates:
@@ -38,7 +39,7 @@ Scaffold new Soroban smart contract projects from battle-tested templates with o
 starforge template search defi
 
 # Use a marketplace template
-starforge new contract my-dex --template uniswap-v2 --from marketplace
+starforge project new contract my-dex --template uniswap-v2 --from marketplace
 
 # Publish your own template
 starforge template publish ./my-template
@@ -47,7 +48,7 @@ starforge template publish ./my-template
 ### 🚀 Contract Deployment
 Validate, size-check, and deploy compiled Soroban `.wasm` files to Testnet or Mainnet. Verifies account balance on-chain, calculates the Soroban WASM hash as a SHA-256 digest of the raw file bytes, and generates the exact `stellar contract deploy` command to complete the deployment.
 
-The local hash shown by `starforge deploy` is intended to match the value reported by `stellar contract inspect --wasm <file>` for the same bytecode. StarForge now computes that hash through a shared helper that validates the WASM payload, rejects empty or malformed input, and fails explicitly on unsupported build environments instead of silently producing a different result.
+The local hash shown by `starforge deploy run` is intended to match the value reported by `stellar contract inspect --wasm <file>` for the same bytecode. StarForge now computes that hash through a shared helper that validates the WASM payload, rejects empty or malformed input, and fails explicitly on unsupported build environments instead of silently producing a different result.
 
 For contributors, the hash is intentionally defined as the SHA-256 digest of the raw `.wasm` bytecode. The implementation currently supports Linux, Windows, and macOS hosts; other environments are rejected with a clear error so reproducibility checks do not silently drift.
 
@@ -60,7 +61,7 @@ For contributors, the hash is intentionally defined as the SHA-256 digest of the
 You can install the latest release binary using the installation script:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/Josetic224/StarForge/main/install.sh | bash
+curl -sL https://raw.githubusercontent.com/Nanle-code/StarForge/main/install.sh | bash
 ```
 
 The script automatically:
@@ -72,7 +73,7 @@ The script automatically:
 
 > **Security note**: Never pipe an untrusted script to `bash` without reviewing it first.
 > You can read [`install.sh`](./install.sh) before running it, or download the binary
-> directly from the [Releases page](https://github.com/Josetic224/StarForge/releases) and verify the checksum manually:
+> directly from the [Releases page](https://github.com/Nanle-code/StarForge/releases) and verify the checksum manually:
 >
 > ```bash
 > sha256sum -c SHA256SUMS.txt
@@ -86,7 +87,7 @@ The script automatically:
 | Linux | aarch64 | ✅ |
 | macOS | x86\_64 | ✅ |
 | macOS | aarch64 (Apple Silicon) | ✅ |
-| Windows | x86\_64 | ✅ (`.zip` from [Releases](https://github.com/Josetic224/StarForge/releases)) |
+| Windows | x86\_64 | ✅ (`.zip` from [Releases](https://github.com/Nanle-code/StarForge/releases)) |
 | FreeBSD / other | — | Not supported |
 
 Windows binaries are built and smoke-tested in CI on every push and pull
@@ -101,7 +102,7 @@ Override the default `/usr/local/bin` destination:
 
 ```bash
 INSTALL_DIR="$HOME/.local/bin" \
-  curl -sL https://raw.githubusercontent.com/Josetic224/StarForge/main/install.sh | bash
+  curl -sL https://raw.githubusercontent.com/Nanle-code/StarForge/main/install.sh | bash
 ```
 
 #### Uninstall
@@ -117,7 +118,7 @@ rm -f "$INSTALL_DIR/starforge"
 A draft Homebrew formula is available for testing:
 
 ```bash
-brew install Josetic224/starforge/starforge
+brew install Nanle-code/starforge/starforge
 ```
 
 ### Docker
@@ -172,7 +173,7 @@ every release) before installing, the same as for the tarball archives.
 - Rust >= 1.80 ([install via rustup](https://rustup.rs))
 
 ```bash
-git clone https://github.com/Josetic224/StarForge.git
+git clone https://github.com/Nanle-code/StarForge.git
 cd StarForge
 cargo build --release
 
@@ -188,7 +189,7 @@ cp target/release/starforge /usr/local/bin/
 starforge --version
 # starforge 0.1.0
 
-starforge info
+starforge config info
 ```
 
 ---
@@ -373,11 +374,11 @@ cp ~/.starforge/config.backup.v0.<timestamp>.toml ~/.starforge/config.toml
 
 **Error types and what they mean:**
 
-| Error | Cause | Fix |
-|---|---|---|
-| `Config schema version 'X' is newer than this binary supports` | Config was written by a newer `starforge` | Upgrade `starforge` |
-| `Unrecognised config schema version 'X'` | Config version field was manually edited or corrupted | Restore from backup or delete `~/.starforge/config.toml` to reset |
-| `Failed to create backup of config vX before migration` | Backup write failed (disk full, permissions) | Free disk space or fix directory permissions |
+| Error                                                          | Cause                                                 | Fix                                                               |
+| -------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------- |
+| `Config schema version 'X' is newer than this binary supports` | Config was written by a newer `starforge`             | Upgrade `starforge`                                               |
+| `Unrecognised config schema version 'X'`                       | Config version field was manually edited or corrupted | Restore from backup or delete `~/.starforge/config.toml` to reset |
+| `Failed to create backup of config vX before migration`        | Backup write failed (disk full, permissions)          | Free disk space or fix directory permissions                      |
 
 **For contributors — adding a new migration step:**
 
@@ -392,25 +393,25 @@ cp ~/.starforge/config.backup.v0.<timestamp>.toml ~/.starforge/config.toml
 
 ```bash
 # Scaffold a Soroban contract (hello-world template)
-starforge new contract my-contract
+starforge project new contract my-contract
 
 # Scaffold interactively with custom options
-starforge new contract my-contract --interactive
+starforge project new contract my-contract --interactive
 
 # Scaffold with a specific template
-starforge new contract my-token --template token
-starforge new contract my-nft --template nft
-starforge new contract my-vote --template voting
+starforge project new contract my-token --template token
+starforge project new contract my-nft --template nft
+starforge project new contract my-vote --template voting
 
 # Search marketplace templates
 starforge template search defi
-starforge new contract --search lending --tags defi
+starforge project new contract --search lending --tags defi
 
 # Use a marketplace template
-starforge new contract my-dex --template uniswap-v2 --from marketplace
+starforge project new contract my-dex --template uniswap-v2 --from marketplace
 
 # Scaffold a Stellar dApp frontend (Vite + React)
-starforge new dapp my-dapp
+starforge project new dapp my-dapp
 ```
 
 ### Local AI assistant
@@ -486,7 +487,7 @@ These commands run offline in a throwaway `HOME`, and CI executes them on
 every PR:
 
 ```bash run
-starforge new contract hello              # scaffold from a template
+starforge project new contract hello              # scaffold from a template
 starforge wallet create alice             # local keypair (add --encrypt to protect it)
 starforge network show                    # testnet, mainnet, or your own
 starforge template search defi            # community templates
@@ -501,20 +502,20 @@ cd hello && stellar contract build
 stellar keys generate deployer                          # or reuse an existing identity
 starforge wallet import --from-stellar-cli deployer     # same wallet, now in StarForge
 starforge wallet fund deployer
-starforge deploy --wasm target/wasm32v1-none/release/hello.wasm --wallet deployer --dry-run
-starforge deploy --wasm target/wasm32v1-none/release/hello.wasm --wallet deployer --yes --execute
+starforge deploy run --wasm target/wasm32v1-none/release/hello.wasm --wallet deployer --dry-run
+starforge deploy run --wasm target/wasm32v1-none/release/hello.wasm --wallet deployer --yes --execute
 stellar contract invoke --id <CONTRACT_ID> --source deployer --network testnet -- hello --to Stellar
 ```
 
 ## Highlights
 
-| | |
-|---|---|
-| **Scaffolding** | `hello-world`, `token`, `nft` and `voting` templates, a template marketplace, and Vite + React dApp frontends. See [Usage](docs/USAGE.md#scaffold-commands). |
-| **Wallets** | Keys encrypted at rest (Argon2id + AES-256-GCM), BIP39, backups and recovery shares, Ledger/Trezor, import from stellar-cli. See [Usage](docs/USAGE.md#wallet-commands) and [wallet import security](docs/WALLET_IMPORT_SECURITY.md). |
-| **Safe deploys** | WASM validation, balance and fee simulation, dry-run plans, deploy policies, checkpoints, history and rollback. See [Deploy policy](docs/DEPLOY_POLICY.md) and [checkpoints](docs/DEPLOYMENT_CHECKPOINTS.md). |
-| **Automation** | A stable `--json` envelope, YAML invocation scripts with assertions, and non-interactive mode for CI. See [JSON stability](docs/CLI_JSON_STABILITY.md) and [Usage](docs/USAGE.md#repeatable-invocation-scripts). |
-| **Local AI (optional)** | Audit, explain and test contracts with a local Ollama model. Nothing leaves your machine. See [Offline AI](docs/OFFLINE_AI.md). |
+|                         |                                                                                                                                                                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Scaffolding**         | `hello-world`, `token`, `nft` and `voting` templates, a template marketplace, and Vite + React dApp frontends. See [Usage](docs/USAGE.md#scaffold-commands).                                                                          |
+| **Wallets**             | Keys encrypted at rest (Argon2id + AES-256-GCM), BIP39, backups and recovery shares, Ledger/Trezor, import from stellar-cli. See [Usage](docs/USAGE.md#wallet-commands) and [wallet import security](docs/WALLET_IMPORT_SECURITY.md). |
+| **Safe deploys**        | WASM validation, balance and fee simulation, dry-run plans, deploy policies, checkpoints, history and rollback. See [Deploy policy](docs/DEPLOY_POLICY.md) and [checkpoints](docs/DEPLOYMENT_CHECKPOINTS.md).                         |
+| **Automation**          | A stable `--json` envelope, YAML invocation scripts with assertions, and non-interactive mode for CI. See [JSON stability](docs/CLI_JSON_STABILITY.md) and [Usage](docs/USAGE.md#repeatable-invocation-scripts).                      |
+| **Local AI (optional)** | Audit, explain and test contracts with a local Ollama model. Nothing leaves your machine. See [Offline AI](docs/OFFLINE_AI.md).                                                                                                       |
 
 Coming from stellar-cli? Read
 **[Migrating from stellar-cli](docs/MIGRATING_FROM_STELLAR_CLI.md)** for a
@@ -527,6 +528,14 @@ still does better.
 - [Configuration](docs/CONFIGURATION.md) · [Architecture](ARCHITECTURE.md) · [All documentation](docs/README.md)
 - Docs site: <https://nanle-code.github.io/StarForge/> (built from [`docs/`](docs/))
 
+### Nightly end-to-end suite
+
+A scheduled workflow exercises the real Stellar **testnet** every night:
+ephemeral wallet → Friendbot funding → scaffold/build/deploy/invoke/upgrade/verify
+for each built-in template, with failures opening or updating a single tracking
+issue. See [docs/NIGHTLY_E2E.md](docs/NIGHTLY_E2E.md) for how to run the suite
+locally and how to change the cron schedule.
+
 ## Status and stability
 
 StarForge is **beta** (`0.x`). The core wallet, scaffold and deploy workflows
@@ -538,14 +547,14 @@ release notes. The `--json` output envelope is versioned and stable
 
 ## Security
 
-- Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
-- Trust boundaries and assumptions: [threat model](SECURITY_THREAT_MODEL.md).
+- Report vulnerabilities privately: see [SECURITY.md](docs/SECURITY.md).
+- Trust boundaries and assumptions: [threat model](./docs/SECURITY_THREAT_MODEL.md).
 - Install only from this repository. Releases ship with `SHA256SUMS.txt`, and
   the installer verifies it.
 - Plaintext wallets are for testnet. Use `--encrypt` or a hardware wallet for
   real funds.
 - Telemetry is **off by default** and local-only until you opt in
-  ([details](TELEMETRY_PRIVACY.md)).
+  ([details](docs/TELEMETRY_PRIVACY.md)).
 
 ## Contributing
 
@@ -604,6 +613,7 @@ StarForge has comprehensive documentation covering all aspects of the project:
 ### ?? Examples
 - **[examples/template_marketplace_usage.md](examples/template_marketplace_usage.md)** - Practical examples
 - **[tutorials/hello-world/](tutorials/hello-world/)** - Beginner tutorial
+- **[15-minute onboarding tutorial](tutorials/onboarding-15-minute/)** - Offline-first tutorial with verified install, wallet, scaffold, and simulation checkpoints
 
 **Total**: 17 documentation files with 7,700+ lines covering architecture, development, API reference, and examples.
 
@@ -664,3 +674,25 @@ pub struct TransferEvent {
 ```
 
 See `examples/binding_generator_example.md` for complete examples.
+
+### Terminal UI
+The `starforge ui` command provides a live TUI (Terminal User Interface) overview of your project, showing balances, deployed contracts, TTLs, recent transactions, and a live event tail.
+![StarForge UI](https://raw.githubusercontent.com/Nanle-code/StarForge/main/docs/ui-screenshot.png)
+# Add contract features
+
+Add reusable components to an existing Soroban contract:
+
+```sh
+starforge new contract my-token --template token
+cd my-token
+starforge add --list
+starforge add ownable
+starforge add pausable --dry-run
+starforge add access-control --path ../another-contract
+```
+
+`starforge add <component>` applies to the current directory. `--path` selects another project, `--dry-run` prints a unified diff without writing files, and `--list` shows the component registry. The command requires a Cargo package with `soroban-sdk` and `src/lib.rs` containing a contract struct. It refuses duplicate applications and generated API name collisions before changing anything.
+
+Components expose `owner` and `transfer_ownership` (`ownable`), `grant_role`, `revoke_role`, and `has_role` (`access-control`), `pause`, `unpause`, and `is_paused` (`pausable`), and `version` and `upgrade` (`upgradeable`). `pausable` and `access-control` accept an authenticated administrator address independently; `ownable` stores an owner. Components have separate storage keys and can be combined. `upgradeable` uses Soroban's current-contract WASM upgrade API. These utilities expose management APIs; contract business methods must call `is_paused` or `has_role` where enforcement is required.
+
+See [docs/ADDING_COMPONENTS.md](docs/ADDING_COMPONENTS.md) for API details, composition guidance, conflicts, and contributor instructions.

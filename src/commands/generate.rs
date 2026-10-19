@@ -20,6 +20,9 @@ pub enum GenerateCommands {
         #[arg(short, long, default_value = "contract.rs")]
         out: PathBuf,
     },
+    /// Generate typed client bindings from a contract WASM or spec
+    /// (same as `starforge contract generate-bindings`)
+    Bindings(crate::commands::contract::GenerateBindingsArgs),
 }
 
 #[derive(Serialize, Clone)]
@@ -156,11 +159,15 @@ pub async fn handle(cmd: &GenerateCommands) -> Result<()> {
             }
             Ok(())
         }
+        GenerateCommands::Bindings(args) => {
+            crate::commands::contract::handle_generate_bindings(args)
+        }
     }
 }
 
 async fn call_openai_api(api_key: &str, messages: &[ChatMessage]) -> Result<String> {
-    let client = reqwest::Client::new();
+    // #902: shared client (proxy, custom CA bundle, user agent).
+    let client = crate::utils::http_client::client().clone();
 
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
